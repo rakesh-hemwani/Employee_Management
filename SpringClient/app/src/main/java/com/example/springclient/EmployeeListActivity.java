@@ -3,6 +3,7 @@ package com.example.springclient;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -26,12 +27,15 @@ import retrofit2.Response;
 public class EmployeeListActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
+    private SwipeRefreshLayout swipeRefreshLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_employee_list);
 
+        swipeRefreshLayout=findViewById(R.id.swipeRefreshLayout);
+        swipeRefreshLayout.setOnRefreshListener(this::loadEmployee);
         recyclerView=findViewById(R.id.employeeList_recyclerView);
         LinearLayoutManager llm=new LinearLayoutManager(this);
         llm.setOrientation(LinearLayoutManager.VERTICAL);
@@ -48,6 +52,8 @@ public class EmployeeListActivity extends AppCompatActivity {
 //        }
         loadEmployee();
     }
+
+
 
     @Override
     protected void onRestart() {
@@ -76,12 +82,14 @@ public class EmployeeListActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<List<Employee>> call, Response<List<Employee>> response) {
                 populateListView(response.body());
+                swipeRefreshLayout.setRefreshing(false);
             }
 
             @Override
             public void onFailure(Call<List<Employee>> call, Throwable t) {
                 Toast.makeText(EmployeeListActivity.this,"Failed to load employees",Toast.LENGTH_SHORT).show();
                 Logger.getLogger(EmployeeListActivity.class.getName()).log(Level.SEVERE,"Error Occurred",t);
+                swipeRefreshLayout.setRefreshing(false);
             }
         });
 
